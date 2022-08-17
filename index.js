@@ -23,17 +23,16 @@ const debounce = (fn, debounceTime) => {
     }
 };
 
-
 function serverCall() {
     olRepo.innerHTML = '';
     const data = entryField.value
 
-    fetch('https://api.github.com/repositories')
+    fetch(`https://api.github.com/search/repositories?q=${data}`)
         .then(response => response.json())
         .then(repositories => {
             let countElement = 0;
 
-            repositories.forEach((elem) => {
+            repositories.items.forEach((elem) => {
 
                 if (elem.name.includes(data) && countElement < 5 && data) {
                     const list = elementCreation('li', 'app__listRepositories', olRepo);
@@ -43,13 +42,10 @@ function serverCall() {
                     list.addEventListener('click', async () => {
                         entryField.value = '';
                         olRepo.innerHTML = '';
-                        const stars = await fetch(`https://api.github.com/repos/${elem.owner.login}/${elem.name}/stargazers`)
-                            .then((response) => response.json())
-                            .then((stargazers) => stargazers.length);
                         const favoritesList = elementCreation('li', 'app__favoritesList', olFavorites);
                         favoritesList.innerText = `Name: ${elem.name}
                         Owner: ${elem.owner.login}
-                        Stars: ${stars}`;
+                        Stars: ${elem.stargazers_count}`;
                         const buttonClose = elementCreation('button', 'button', favoritesList);
                         buttonClose.textContent = 'X';
 
@@ -61,11 +57,12 @@ function serverCall() {
                 }
             })
 
+
         })
 }
 
-const a = debounce(serverCall, 700)
-entryField.addEventListener('keydown', a)
+const request = debounce(serverCall, 700)
+entryField.addEventListener('keydown', request)
 
 
 
